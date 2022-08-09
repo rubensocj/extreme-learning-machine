@@ -1,12 +1,19 @@
-#' Title
+#' @Title
+#' Extreme learning machine (ELM)
+#' 
+#' @description 
+#' Cria uma rede neural de camada oculta √∫nica usando o
+#' algoritmo de treinamento extreme learning machine (ELM).
 #'
-#' @param Y matrix; vari·vel dependente.
-#' @param X matrix; covari·veis.
+#' @param Y matrix; vari√°vel dependente.
+#' @param X matrix; covari√°veis.
 #' @param h integer; tamanho da camada oculta.
-#' @param act.fun function; funÁ„o de ativaÁ„o.
-#' @param dist function; distribuiÁ„o de probabilidades para os pesos.
+#' @param act.fun function; fun√ß√£o de ativa√ß√£o.
+#' @param dist function; distribui√ß√£o de probabilidades para os pesos.
 #'
-#' @return list
+#' @author Rubens Oliveira da Cunha J√∫nior (cunhajunior.rubens@gmail.com).
+#' 
+#' @return list;
 #'
 #' @examples
 elm <- function(Y, X, h, act.fun = sigmoid, dist.fun = runif) {
