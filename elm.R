@@ -21,20 +21,20 @@ elm <- function(Y, X, h, act.fun = sigmoid, dist.fun = runif) {
   X <- as.matrix(X)
   Y <- as.matrix(Y)
   
-  n.i <- ncol(as.matrix(X)) # input nodes
-  n.o <- ncol(as.matrix(Y)) # output nodes
+  n.i <- ncol(X) # input nodes
+  n.o <- ncol(Y) # output nodes
   
   # randomly initializes weights and bias
   W <- matrix(data = dist.fun(n = n.i * h), nrow = n.i, ncol = h)
   bias <- dist.fun(n = h)
   
-  # compute H
+  # compute hidden layer output matrix: H
   H <- act.fun(X %*% W + bias)
   
   # compute H_ (invert H)
   H_ <- MASS::ginv(H)
   
-  # compute beta estimate
+  # compute beta
   beta <- H_ %*% Y
   
   # fitted

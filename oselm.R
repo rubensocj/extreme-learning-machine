@@ -1,64 +1,26 @@
-# Online Sequential Extreme Learning Machine implementation
-set.seed(123)
-
-# Select parameters
-sigmoid <- function(x) 1 / (1 + exp(-x))  # activation function: g
-h <- 10                                   # hidden node number: Ñ
-dados <- cars                             # data arrives sequentially
-  
-# Step 1: initialization phase
-# H_0: initial hidden layer output matrix
-# H_0 matrix is filled up for use in the learning phase
-# Initialize the learning using a small chunk of initial training data
-# the number of training data can be equal or close to Ñ (hidden node number)
-# number of training data > number of hidden nodes
-dados0 <- dados[1:20, ]
-
-X <- as.matrix(dados0$speed)
-Y <- as.matrix(dados0$dist)
-
-n.i <- ncol(X) # input nodes
-n.o <- ncol(Y) # output nodes
-
-# assign random input weights and bias
-W <- matrix(data = rnorm(n = n.i * h), nrow = n.i, ncol = h)
-bias <- rnorm(n = h)
-
-# compute H
-H_0 <- softsign(X %*% W + bias)
-
-# compute beta estimate
-# if t(H) %*% H is singular use smaller network size (Ñ) or increase data number
-p_0 <- solve(t(H_0) %*% H_0)
-beta_0 <- p_0 %*% t(H_0) %*% Y
-
-# set k = 0
-k <- 0
-
-# Step 2: sequential learning phase
-# (k+1)th chunk: First chunk
-dados1 <- dados[21:30, ]
-
-X_k1 <- as.matrix(dados1$speed)
-
-# calculate the partial hidden layer output matrix: H_k+1
-H_k1 <- softsign(X_k1 %*% W + bias)
-
-# set T_k+1
-Y_k1 <- as.matrix(dados1$dist)
-
-# calculate the output weight beta_k+1
-I <- diag(nrow = nrow(H_k1)) # identity matrix
-p_k1 <- p_0 - p_0 %*% t(H_k1) %*% solve(I + H_k1 %*% p_0 %*% t(H_k1)) %*% H_k1 %*% p_0
-beta_k1 <- beta_0 + p_k1 %*% t(H_k1) %*% (Y_k1 - H_k1 %*% beta_0)
-
-# set k = k + 1
-# go to step 2
-
-# Remarks:
-# The chunk size does not need to be constant.
-
+#' @Title
+#' Online sequential extreme learning machine (ELM)
+#' 
+#' @description 
+#' Implementação de redes neurais de camada oculta única usando a versão online
+#' do algoritmo de treinamento extreme learning machine (ELM).
+#'
+#' @details 
+#' Etapa 1: fase de inicialização.
+#'
+#' @param Y matrix; variável dependente.
+#' @param X matrix; covariáveis.
+#' @param h integer; tamanho da camada oculta.
+#' @param act.fun function; função de ativação.
+#' @param dist function; distribuição de probabilidades para os pesos.
+#'
+#' @author Rubens Oliveira da Cunha Júnior (cunhajunior.rubens@gmail.com).
+#' 
+#' @return list;
+#'
+#' @examples
 oselm.initialization <- function(Y, X, h, act.fun = tanh, dist.fun = rnorm) {
+  
   # small chunk of initial training data
   X <- as.matrix(X)
   Y <- as.matrix(Y)
@@ -73,7 +35,7 @@ oselm.initialization <- function(Y, X, h, act.fun = tanh, dist.fun = rnorm) {
   # compute the initial hidden layer output matrix: H_0
   H_0 <- act.fun(X %*% W + bias)
   
-  # compute beta_0
+  # compute initial beta
   # if t(H) %*% H is singular use smaller h or increase training data samples
   p_0 <- solve(t(H_0) %*% H_0)
   beta_0 <- p_0 %*% t(H_0) %*% Y
@@ -85,6 +47,25 @@ oselm.initialization <- function(Y, X, h, act.fun = tanh, dist.fun = rnorm) {
               beta = beta_0, p = p_0))
 }
 
+#' @Title
+#' Online sequential extreme learning machine (ELM)
+#' 
+#' @description 
+#' Implementação de redes neurais de camada oculta única usando a versão online
+#' do algoritmo de treinamento extreme learning machine (ELM).
+#'
+#' @details 
+#' Etapa 2: fase de aprendizagem sequencial.
+#'
+#' @param model object; modelo construído usando oselm.initialization.
+#' @param Y_k matrix; variável dependente.
+#' @param X_k matrix; covariáveis.
+#'
+#' @author Rubens Oliveira da Cunha Júnior (cunhajunior.rubens@gmail.com).
+#' 
+#' @return list;
+#'
+#' @examples
 oselm.learning <- function(model, X_k, Y_k) {
   W <- model$weights
   bias <- model$bias
@@ -129,25 +110,8 @@ radial <- function(x) exp(-x^2)
 
 softplus <- function(x) log(1 + exp(x))
 
-softmax <- function(x) exp(x) / sum(exp(x))
-
 softsign <- function(x) x / (abs(x) + 1)
 
-relu <- function(x) max(0, x)
+relu <- function(x) ifelse(x > 0, x, 0)
 
 identity <- function(x) x
-
-data('mcycle', package = 'MASS')
-times <- matrix(mcycle$times, ncol = 1)
-accel <- mcycle$accel
-my.elm <- elm(Y = accel, X = times, h = 100, act.fun = tanh, dist.fun = rnorm)
-plot(times, accel, pch = 16, col = 'black')
-points(x = times, y = my.elm$fitted, pch = 16, col = 'red')
-
-set.seed(2)
-x <- rnorm(100, 0, )
-y1 <- x^3 - 2*x^2 - 3*x + 2
-y2 <- x^2 + x - 1
-elm2 <- elm(Y = cbind(y1, y2), X = x, h = 50)
-elm2$beta
-
