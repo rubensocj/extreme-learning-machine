@@ -2,16 +2,16 @@
 #' Extreme learning machine (ELM)
 #' 
 #' @description 
-#' Cria uma rede neural de camada oculta Ãºnica usando o
+#' Implementação de redes neurais de camada oculta única usando o
 #' algoritmo de treinamento extreme learning machine (ELM).
 #'
-#' @param Y matrix; variÃ¡vel dependente.
-#' @param X matrix; covariÃ¡veis.
+#' @param Y matrix; variável dependente.
+#' @param X matrix; covariáveis.
 #' @param h integer; tamanho da camada oculta.
-#' @param act.fun function; funÃ§Ã£o de ativaÃ§Ã£o.
-#' @param dist function; distribuiÃ§Ã£o de probabilidades para os pesos.
+#' @param act.fun function; função de ativação.
+#' @param dist function; distribuição de probabilidades para os pesos.
 #'
-#' @author Rubens Oliveira da Cunha JÃºnior (cunhajunior.rubens@gmail.com).
+#' @author Rubens Oliveira da Cunha Júnior (cunhajunior.rubens@gmail.com).
 #' 
 #' @return list;
 #'
@@ -37,7 +37,7 @@ elm <- function(Y, X, h, act.fun = sigmoid, dist.fun = runif) {
   # compute beta estimate
   beta <- H_ %*% Y
   
-  # fitted (predictions)
+  # fitted
   pred <- H %*% beta
   
   return(list(fitted = pred, weights = W, bias = bias, act.fun = act.fun,
@@ -62,25 +62,8 @@ radial <- function(x) exp(-x^2)
 
 softplus <- function(x) log(1 + exp(x))
 
-softmax <- function(x) exp(x) / sum(exp(x))
-
 softsign <- function(x) x / (abs(x) + 1)
 
-relu <- function(x) max(0, x)
+relu <- function(x) ifelse(x > 0, x, 0)
 
 identity <- function(x) x
-
-data('mcycle', package = 'MASS')
-times <- matrix(mcycle$times, ncol = 1)
-accel <- mcycle$accel
-my.elm <- elm(Y = accel, X = times, h = 100, act.fun = tanh, dist.fun = rnorm)
-plot(times, accel, pch = 16, col = 'black')
-points(x = times, y = my.elm$fitted, pch = 16, col = 'red')
-
-set.seed(2)
-x <- rnorm(100, 0, )
-y1 <- x^3 - 2*x^2 - 3*x + 2
-y2 <- x^2 + x - 1
-elm2 <- elm(Y = cbind(y1, y2), X = x, h = 50)
-elm2$beta
-
