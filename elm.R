@@ -5,19 +5,20 @@
 #' Implementação de redes neurais de camada oculta única usando o
 #' algoritmo de treinamento extreme learning machine (ELM).
 #'
-#' @param Y matrix; variável dependente.
+#' @param Y matrix; resposta.
 #' @param X matrix; covariáveis.
 #' @param h integer; tamanho da camada oculta.
 #' @param act.fun function; função de ativação.
 #' @param dist function; distribuição de probabilidades para os pesos.
+#' @param ... parâmetros adicionais da função distribuição de probabilidades.
 #'
 #' @author Rubens Oliveira da Cunha Júnior (cunhajunior.rubens@gmail.com).
 #' 
 #' @return list;
 #'
 #' @examples
-elm <- function(Y, X, h, act.fun = sigmoid, dist.fun = runif) {
-  
+my.elm <- function(Y, X, h, act.fun = sigmoid, dist.fun = runif, ...) {
+    
   X <- as.matrix(X)
   Y <- as.matrix(Y)
   
@@ -25,11 +26,12 @@ elm <- function(Y, X, h, act.fun = sigmoid, dist.fun = runif) {
   n.o <- ncol(Y) # output nodes
   
   # randomly initializes weights and bias
-  W <- matrix(data = dist.fun(n = n.i * h), nrow = n.i, ncol = h)
-  bias <- dist.fun(n = h)
-  
+  W <- matrix(data = dist.fun(n = (n.i + 1) * h, ...),
+              nrow = n.i + 1,
+              ncol = h)
+
   # compute hidden layer output matrix: H
-  H <- act.fun(X %*% W + bias)
+  H <- act.fun(cbind(1, X) %*% W)
   
   # compute H_ (invert H)
   H_ <- MASS::ginv(H)
@@ -40,13 +42,13 @@ elm <- function(Y, X, h, act.fun = sigmoid, dist.fun = runif) {
   # fitted
   pred <- H %*% beta
   
-  return(list(fitted = pred, weights = W, bias = bias, act.fun = act.fun,
-              beta = beta))
+  return(list(fitted = pred, weights = W, act.fun = act.fun, beta = beta,
+              H = H, X = X, Y = Y, h = h, dist.fun = dist.fun))
 }
 
 predict.elm <- function(model, new.data) {
   # compute H
-  H <- model$act.fun(new.data %*% model$weights + model$bias)
+  H <- model$act.fun(cbind(1, new.data) %*% model$weights)
   
   # make predictions
   pred <- H %*% model$beta

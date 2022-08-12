@@ -8,18 +8,19 @@
 #' @details 
 #' Etapa 1: fase de inicialização.
 #'
-#' @param Y matrix; variável dependente.
+#' @param Y matrix; resposta.
 #' @param X matrix; covariáveis.
 #' @param h integer; tamanho da camada oculta.
 #' @param act.fun function; função de ativação.
 #' @param dist function; distribuição de probabilidades para os pesos.
+#' @param ... parâmetros adicionais da função distribuição de probabilidades.
 #'
 #' @author Rubens Oliveira da Cunha Júnior (cunhajunior.rubens@gmail.com).
 #' 
 #' @return list;
 #'
 #' @examples
-oselm.initialization <- function(Y, X, h, act.fun = tanh, dist.fun = rnorm) {
+oselm.initialization <- function(Y, X, h, act.fun = tanh, dist.fun = rnorm, ...) {
   
   # small chunk of initial training data
   X <- as.matrix(X)
@@ -29,11 +30,12 @@ oselm.initialization <- function(Y, X, h, act.fun = tanh, dist.fun = rnorm) {
   n.o <- ncol(Y) # output nodes
   
   # assign random input weights and bias
-  W <- matrix(data = dist.fun(n = n.i * h), nrow = n.i, ncol = h)
-  bias <- dist.fun(n = h)
+  W <- matrix(data = dist.fun(n = (n.i + 1) * h, ...),
+              nrow = n.i + 1,
+              ncol = h)
   
   # compute the initial hidden layer output matrix: H_0
-  H_0 <- act.fun(X %*% W + bias)
+  H_0 <- act.fun(cbind(1, X) %*% W)
   
   # compute initial beta
   # if t(H) %*% H is singular use smaller h or increase training data samples
@@ -43,7 +45,7 @@ oselm.initialization <- function(Y, X, h, act.fun = tanh, dist.fun = rnorm) {
   # fitted
   pred <- H_0 %*% beta_0
   
-  return(list(fitted = pred, weights = W, bias = bias, act.fun = act.fun,
+  return(list(fitted = pred, weights = W, act.fun = act.fun,
               beta = beta_0, p = p_0))
 }
 
@@ -78,7 +80,7 @@ oselm.learning <- function(model, X_k, Y_k) {
   Y_k <- as.matrix(Y_k)
   
   # compute the partial hidden layer output matrix: H_k+1
-  H_k <- act.fun(X_k %*% W + bias)
+  H_k <- act.fun(cbind(1, X_k) %*% W)
   
   # calculate the output weight beta_k+1
   I <- diag(nrow = nrow(H_k)) # identity matrix
@@ -88,13 +90,13 @@ oselm.learning <- function(model, X_k, Y_k) {
   # fitted
   pred <- H_k %*% beta_k
   
-  return(list(fitted = pred, weights = W, bias = bias, act.fun = act.fun,
+  return(list(fitted = pred, weights = W, act.fun = act.fun,
               beta = beta_k, p = p_k))
 }
 
 predict.elm <- function(model, new.data) {
   # compute H
-  H <- model$act.fun(new.data %*% model$weights + model$bias)
+  H <- model$act.fun(cbind(1, new.data) %*% model$weights)
   
   # make predictions
   pred <- H %*% model$beta
