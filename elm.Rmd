@@ -16,21 +16,23 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r cars}
-summary(cars)
+# importa função implementada
+source('./elm.R')
 
-rmse <- function (obs, est) sqrt(mean((obs - est)^2))
+# carrega o pacote
+library('elmNNRcpp')
 
-library(elmNNRcpp)
-
+# carrega o conjunto de dados
 data("Boston", package = 'KernelKnn')
+```
 
+```{r modelos}
 # Modelo linear
 fit_lm = lm(medv~., data = Boston[1:350, ])
-pr_te_lm = predict(fit_lm, newdata = Boston[351:nrow(X), ])
-
-# elmNNRcpp
+ 
+# pacote elmNNRcpp
 Boston = as.matrix(Boston)
-dimnames(Boston) = NULL
+# dimnames(Boston) = NULL
 
 X = Boston[, -dim(Boston)[2]]
 xtr = X[1:350, ]
@@ -49,9 +51,7 @@ fit_elm = elm_train(xtr,
                     bias = TRUE,
                     verbose = T)
 
-pr_te_elm = elm_predict(fit_elm, xte)
-
-# Implementação
+# implementação
 imp_elm <- my.elm(Y = ytr,
                   X = xtr,
                   h = 1000,
@@ -60,8 +60,19 @@ imp_elm <- my.elm(Y = ytr,
                   min = -1,
                   max = 1)
 
-pr_te_imp <- predict.elm(imp_elm, xte)
+```
 
+```{r previsão}
+pr_te_elm = elmNNRcpp::elm_predict(fit_elm, xte)
+pr_te_imp <- predict.elm(imp_elm, xte)
+pr_te_lm = predict(fit_lm, newdata = as.data.frame(Boston[351:nrow(X), ]))
+```
+
+```{r medida de desempenho}
+rmse <- function (obs, est) sqrt(mean((obs - est)^2))
+```
+
+```{r avalia desempenho}
 # Teste
 rmse(yte, pr_te_elm[, 1])
 rmse(yte, pr_te_imp[, 1])
