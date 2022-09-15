@@ -2,25 +2,21 @@
 #' Online sequential extreme learning machine (ELM)
 #' 
 #' @description 
-#' Implementação de redes neurais de camada oculta única usando a versão online
+#' Rede neural de camada oculta Ãºnica usando a versÃ£o online
 #' do algoritmo de treinamento extreme learning machine (ELM).
 #'
 #' @details 
-#' Etapa 1: fase de inicialização.
+#' Etapa 1: fase de inicializaÃ§Ã£o.
 #'
 #' @param Y matrix; resposta.
-#' @param X matrix; covariáveis.
+#' @param X matrix; covariÃ¡veis.
 #' @param h integer; tamanho da camada oculta.
-#' @param act.fun function; função de ativação.
-#' @param dist function; distribuição de probabilidades para os pesos.
-#' @param ... parâmetros adicionais da função distribuição de probabilidades.
+#' @param act.fun function; funÃ§Ã£o de ativaÃ§Ã£o.
 #'
-#' @author Rubens Oliveira da Cunha Júnior (cunhajunior.rubens@gmail.com).
+#' @author Rubens Oliveira da Cunha Junior (cunhajunior.rubens@gmail.com).
 #' 
 #' @return list;
-#'
-#' @examples
-oselm.initialization <- function(Y, X, h, act.fun = tanh, dist.fun = rnorm, ...) {
+oselm.initialization <- function(Y, X, h, act.fun) {
   
   # small chunk of initial training data
   X <- as.matrix(X)
@@ -30,9 +26,9 @@ oselm.initialization <- function(Y, X, h, act.fun = tanh, dist.fun = rnorm, ...)
   n.o <- ncol(Y) # output nodes
   
   # assign random input weights and bias
-  W <- matrix(data = dist.fun(n = (n.i + 1) * h, ...),
+  W <- matrix(data = runif(n = (n.i + 1) * h, min = -1, max = 1),
               nrow = n.i + 1,
-              ncol = h)
+              ncol = h * n.o)
   
   # compute the initial hidden layer output matrix: H_0
   H_0 <- act.fun(cbind(1, X) %*% W)
@@ -53,21 +49,19 @@ oselm.initialization <- function(Y, X, h, act.fun = tanh, dist.fun = rnorm, ...)
 #' Online sequential extreme learning machine (ELM)
 #' 
 #' @description 
-#' Implementação de redes neurais de camada oculta única usando a versão online
+#' Rede neural de camada oculta Ãºnica usando a versÃ£o online
 #' do algoritmo de treinamento extreme learning machine (ELM).
 #'
 #' @details 
 #' Etapa 2: fase de aprendizagem sequencial.
 #'
-#' @param model object; modelo construído usando oselm.initialization.
-#' @param Y_k matrix; variável dependente.
-#' @param X_k matrix; covariáveis.
+#' @param model object; modelo construÃ­do usando oselm.initialization.
+#' @param Y_k matrix; variÃ¡vel dependente.
+#' @param X_k matrix; covariÃ¡veis.
 #'
-#' @author Rubens Oliveira da Cunha Júnior (cunhajunior.rubens@gmail.com).
+#' @author Rubens Oliveira da Cunha JÃºnior (cunhajunior.rubens@gmail.com).
 #' 
 #' @return list;
-#'
-#' @examples
 oselm.learning <- function(model, X_k, Y_k) {
   W <- model$weights
   bias <- model$bias
@@ -117,3 +111,16 @@ softsign <- function(x) x / (abs(x) + 1)
 relu <- function(x) ifelse(x > 0, x, 0)
 
 identity <- function(x) x
+
+hardlim <- function(x) ifelse(x >= 0, 1, 0)
+
+library(ELMR)
+x = runif(100, 0, 50)
+y = sqrt(x)
+train = data.frame(y,x)
+train = data.frame(preProcess(train))
+model <- OSelm_train.formula(y~x, train, "regression", 100, "hardlim", 10, 10)
+y = sqrt(x)
+test = data.frame(y,x)
+test = data.frame(preProcess(train))
+accuracy = predict_elm(model, test)

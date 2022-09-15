@@ -2,23 +2,19 @@
 #' Extreme learning machine (ELM)
 #' 
 #' @description 
-#' Implementação de redes neurais de camada oculta única usando o
+#' Redes neural de camada oculta única usando o
 #' algoritmo de treinamento extreme learning machine (ELM).
 #'
 #' @param Y matrix; resposta.
 #' @param X matrix; covariáveis.
 #' @param h integer; tamanho da camada oculta.
 #' @param act.fun function; função de ativação.
-#' @param dist function; distribuição de probabilidades para os pesos.
-#' @param ... parâmetros adicionais da função distribuição de probabilidades.
 #'
-#' @author Rubens Oliveira da Cunha Júnior (cunhajunior.rubens@gmail.com).
+#' @author Rubens Oliveira da Cunha Junior (cunhajunior.rubens@gmail.com).
 #' 
 #' @return list;
-#'
-#' @examples
-my.elm <- function(Y, X, h, act.fun = sigmoid, dist.fun = runif, ...) {
-    
+elm <- function(Y, X, h, act.fun) {
+  
   X <- as.matrix(X)
   Y <- as.matrix(Y)
   
@@ -26,10 +22,10 @@ my.elm <- function(Y, X, h, act.fun = sigmoid, dist.fun = runif, ...) {
   n.o <- ncol(Y) # output nodes
   
   # randomly initializes weights and bias
-  W <- matrix(data = dist.fun(n = (n.i + 1) * h, ...),
+  W <- matrix(data = runif(n = (n.i + 1) * h, min = -1, max = 1),
               nrow = n.i + 1,
-              ncol = h)
-
+              ncol = h * n.o)
+  
   # compute hidden layer output matrix: H
   H <- act.fun(cbind(1, X) %*% W)
   
@@ -42,8 +38,8 @@ my.elm <- function(Y, X, h, act.fun = sigmoid, dist.fun = runif, ...) {
   # fitted
   pred <- H %*% beta
   
-  return(list(fitted = pred, weights = W, act.fun = act.fun, beta = beta,
-              H = H, X = X, Y = Y, h = h, dist.fun = dist.fun))
+  return(list(fitted = pred, weights = W, act.fun = act.fun,
+              beta = beta, H = H, X = X, Y = Y, h = h))
 }
 
 predict.elm <- function(model, new.data) {
